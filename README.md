@@ -14,6 +14,8 @@ To launch tests that require postgres ensure you have a `docker` daemon running 
 
 Use `sbt test` to launch the tests.
 
+test-stuff
+
 You can launch the application with the following command.
 
 ```
