@@ -1,23 +1,24 @@
 package leaderboard.sql
 
+import cats.ApplicativeThrow
+import cats.effect.Async
+import cats.syntax.applicativeError.*
 import doobie.free.connection.ConnectionIO
 import doobie.util.transactor.Transactor
-import izumi.functional.bio.Panic2
-import izumi.functional.bio.catz.*
 import leaderboard.model.QueryFailure
 
-trait SQL[F[_, _]] {
-  def execute[A](queryName: String)(conn: ConnectionIO[A]): F[QueryFailure, A]
+trait SQL[F[_]] {
+  def execute[A](queryName: String)(conn: ConnectionIO[A]): F[Either[QueryFailure, A]]
 }
 
 object SQL {
-  final class Impl[F[+_, +_]: Panic2](
-    transactor: Transactor[F[Throwable, _]]
+  final class Impl[F[+_]: Async: ApplicativeThrow](
+    transactor: Transactor[F[_]]
   ) extends SQL[F] {
-    override def execute[A](queryName: String)(conn: ConnectionIO[A]): F[QueryFailure, A] = {
+    override def execute[A](queryName: String)(conn: ConnectionIO[A]): F[Either[QueryFailure, A]] = {
       transactor.trans
         .apply(conn)
-        .leftMap(QueryFailure(queryName, _))
+        .redeem(ex => Left(QueryFailure(queryName, ex)), res => Right(res))
     }
   }
 }

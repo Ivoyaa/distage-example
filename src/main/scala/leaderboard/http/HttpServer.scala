@@ -15,11 +15,11 @@ final case class HttpServer(
 
 object HttpServer {
 
-  final class Impl[F[+_, +_]](
+  final class Impl[F[+_]](
     allHttpApis: Set[HttpApi[F]]
   )(implicit
-    async: Async[F[Throwable, _]]
-  ) extends Lifecycle.Of[F[Throwable, _], HttpServer](
+    async: Async[F[_]]
+  ) extends Lifecycle.Of[F[_], HttpServer](
       Lifecycle.fromCats {
         val combinedApis = allHttpApis.map(_.http).toList.foldK
 
