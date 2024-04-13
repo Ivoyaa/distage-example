@@ -1,6 +1,5 @@
 package leaderboard.sql
 
-import cats.ApplicativeThrow
 import cats.effect.Async
 import cats.syntax.applicativeError.*
 import doobie.free.connection.ConnectionIO
@@ -12,7 +11,7 @@ trait SQL[F[_]] {
 }
 
 object SQL {
-  final class Impl[F[+_]: Async: ApplicativeThrow](
+  final class Impl[F[+_]: Async](
     transactor: Transactor[F[_]]
   ) extends SQL[F] {
     override def execute[A](queryName: String)(conn: ConnectionIO[A]): F[Either[QueryFailure, A]] = {

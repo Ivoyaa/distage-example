@@ -6,12 +6,10 @@ import izumi.distage.model.definition.StandardAxis.Repo
 import izumi.distage.plugins.PluginConfig
 import izumi.distage.testkit.scalatest.{AssertZIO, SpecZIO}
 import leaderboard.model.*
-import leaderboard.repo.Ladder
-import zio.Task
-//import leaderboard.repo.{Ladder, Profiles}
-//import leaderboard.services.Ranks
+import leaderboard.repo.{Ladder, Profiles}
+import leaderboard.services.Ranks
 import leaderboard.zioenv.*
-import zio.{IO, ZIO}
+import zio.{RIO, Task, ZIO}
 
 abstract class LeaderboardTest extends SpecZIO with AssertZIO {
   override def config = super.config.copy(
@@ -27,7 +25,7 @@ abstract class LeaderboardTest extends SpecZIO with AssertZIO {
     // this includes the Postgres Docker container above and table DDLs
     memoizationRoots = Set(
       DIKey[Ladder[Task]],
-//      DIKey[Profiles[IO]],
+      DIKey[Profiles[Task]],
     ),
   )
 }
@@ -60,12 +58,12 @@ abstract class LadderTest extends LeaderboardTest {
     "submit & get" in {
       (rnd: Rnd[Task], ladder: Ladder[Task]) =>
         for {
-          user  <- rnd[UserId]
-          score <- rnd[Score]
-          _     <- ladder.submitScore(user, score)
+          user   <- rnd[UserId]
+          score  <- rnd[Score]
+          _      <- ladder.submitScore(user, score)
           scores <- ladder.getScores.flatMap(ZIO.fromEither(_))
-          res   = scores.find(_._1 == user).map(_._2)
-          _     <- assertIO(res contains score)
+          res     = scores.find(_._1 == user).map(_._2)
+          _      <- assertIO(res contains score)
         } yield ()
     }
 
@@ -97,86 +95,87 @@ abstract class LadderTest extends LeaderboardTest {
 
 }
 
-//abstract class ProfilesTest extends LeaderboardTest {
-//
-//  "Profiles" should {
-//
-//    /** that's what the ZIO signature looks like for ZIO Env injection: */
-//    "set & get" in {
-//      val zioValue: ZIO[Profiles[IO] & Rnd[IO], QueryFailure, Unit] = for {
-//        user   <- rnd[UserId]
-//        name   <- rnd[String]
-//        desc   <- rnd[String]
-//        profile = UserProfile(name, desc)
-//        _      <- profiles.setProfile(user, profile)
-//        res    <- profiles.getProfile(user)
-//        _      <- assertIO(res contains profile)
-//      } yield ()
-//      zioValue
-//    }
-//
-//  }
-//
-//}
+abstract class ProfilesTest extends LeaderboardTest {
 
-//abstract class RanksTest extends LeaderboardTest {
-//
-//  "Ranks" should {
-//
-//    /** you can use Argument injection and ZIO Env injection at the same time: */
-//    "return 0 rank for a user with no score" in {
-//      (ranks: Ranks[IO]) =>
-//        for {
-//          user   <- rnd[UserId]
-//          name   <- rnd[String]
-//          desc   <- rnd[String]
-//          profile = UserProfile(name, desc)
-//          _      <- profiles.setProfile(user, profile)
-//          res1   <- ranks.getRank(user)
-//          _      <- assertIO(res1.contains(RankedProfile(name, desc, 0, 0)))
-//        } yield ()
-//    }
-//
-//    "return None for a user with no profile" in {
-//      for {
-//        user  <- rnd[UserId]
-//        score <- rnd[Score]
-//        _     <- ladder.submitScore(user, score)
-//        res1  <- ranks.getRank(user)
-//        _     <- assertIO(res1.isEmpty)
-//      } yield ()
-//    }
-//
-//    "assign a higher rank to a user with more score" in {
-//      for {
-//        user1  <- rnd[UserId]
-//        name1  <- rnd[String]
-//        desc1  <- rnd[String]
-//        score1 <- rnd[Score]
-//
-//        user2  <- rnd[UserId]
-//        name2  <- rnd[String]
-//        desc2  <- rnd[String]
-//        score2 <- rnd[Score]
-//
-//        _ <- profiles.setProfile(user1, UserProfile(name1, desc1))
-//        _ <- ladder.submitScore(user1, score1)
-//
-//        _ <- profiles.setProfile(user2, UserProfile(name2, desc2))
-//        _ <- ladder.submitScore(user2, score2)
-//
-//        user1Rank <- ranks.getRank(user1).map(_.get.rank)
-//        user2Rank <- ranks.getRank(user2).map(_.get.rank)
-//
-//        _ <-
-//          if (score1 > score2) {
-//            assertIO(user1Rank < user2Rank)
-//          } else if (score2 > score1) {
-//            assertIO(user2Rank < user1Rank)
-//          } else ZIO.unit
-//      } yield ()
-//    }
-//
-//  }
-//
-//}
+  "Profiles" should {
+
+    /** that's what the ZIO signature looks like for ZIO Env injection: */
+    "set & get" in {
+      val zioValue: RIO[Profiles[Task] & Rnd[Task], Unit] = for {
+        user   <- rnd[UserId]
+        name   <- rnd[String]
+        desc   <- rnd[String]
+        profile = UserProfile(name, desc)
+        _      <- profiles.setProfile(user, profile)
+        res    <- profiles.getProfile(user).flatMap(ZIO.fromEither(_))
+        _      <- assertIO(res contains profile)
+      } yield ()
+
+      zioValue
+    }
+
+  }
+
+}
+
+abstract class RanksTest extends LeaderboardTest {
+
+  "Ranks" should {
+
+    /** you can use Argument injection and ZIO Env injection at the same time: */
+    "return 0 rank for a user with no score" in {
+      (ranks: Ranks[Task]) =>
+        for {
+          user   <- rnd[UserId]
+          name   <- rnd[String]
+          desc   <- rnd[String]
+          profile = UserProfile(name, desc)
+          _      <- profiles.setProfile(user, profile)
+          res1   <- ranks.getRank(user)
+          _      <- assertIO(res1.contains(RankedProfile(name, desc, 0, 0)))
+        } yield ()
+    }
+
+    "return None for a user with no profile" in {
+      for {
+        user  <- rnd[UserId]
+        score <- rnd[Score]
+        _     <- ladder.submitScore(user, score)
+        res1  <- ranks.getRank(user).flatMap(ZIO.fromEither(_))
+        _     <- assertIO(res1.isEmpty)
+      } yield ()
+    }
+
+    "assign a higher rank to a user with more score" in {
+      for {
+        user1  <- rnd[UserId]
+        name1  <- rnd[String]
+        desc1  <- rnd[String]
+        score1 <- rnd[Score]
+
+        user2  <- rnd[UserId]
+        name2  <- rnd[String]
+        desc2  <- rnd[String]
+        score2 <- rnd[Score]
+
+        _ <- profiles.setProfile(user1, UserProfile(name1, desc1))
+        _ <- ladder.submitScore(user1, score1)
+
+        _ <- profiles.setProfile(user2, UserProfile(name2, desc2))
+        _ <- ladder.submitScore(user2, score2)
+
+        user1Rank <- ranks.getRank(user1).flatMap(ZIO.fromEither(_)).map(_.get.rank)
+        user2Rank <- ranks.getRank(user2).flatMap(ZIO.fromEither(_)).map(_.get.rank)
+
+        _ <-
+          if (score1 > score2) {
+            assertIO(user1Rank < user2Rank)
+          } else if (score2 > score1) {
+            assertIO(user2Rank < user1Rank)
+          } else ZIO.unit
+      } yield ()
+    }
+
+  }
+
+}

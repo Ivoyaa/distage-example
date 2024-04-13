@@ -6,7 +6,6 @@
 Example `distage` project presented at Functional Scala 2019
 
 Features [distage](https://izumi.7mind.io/distage/),
-[Bifunctor Tagless Final](https://izumi.7mind.io/bio/),
 [ZIO Environment](https://zio.dev) for composing test fixtures,
 and [distage-docker](https://izumi.7mind.io/distage/distage-framework-docker) for setting up test containers.
 

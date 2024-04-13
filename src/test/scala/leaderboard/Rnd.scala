@@ -1,7 +1,6 @@
 package leaderboard
 
 import cats.effect.kernel.Sync
-import izumi.functional.bio.{F, IO2}
 import org.scalacheck.Gen.Parameters
 import org.scalacheck.{Arbitrary, Prop}
 
