@@ -144,7 +144,7 @@ lazy val root = project
     `leaderboard-bifunctor-tf`,
     `leaderboard-monomorphic-cats`,
   )
-  .enablePlugins(GraalVMNativeImagePlugin, UniversalPlugin)
+  .enablePlugins(GraalVMNativeImagePlugin, UniversalPlugin) // enabled here for CI purposes
 
 lazy val `leaderboard-monofunctor-tf` = makeExampleProject(
   moduleName = "leaderboard-monofunctor-tf",

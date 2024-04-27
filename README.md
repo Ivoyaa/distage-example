@@ -6,14 +6,17 @@
 Example `distage` project presented at Functional Scala 2019
 
 Features [distage](https://izumi.7mind.io/distage/),
-[ZIO Environment](https://zio.dev) for composing test fixtures,
 and [distage-docker](https://izumi.7mind.io/distage/distage-framework-docker) for setting up test containers.
+
+- [distage-example-bifunctor-tf](distage-example-bifunctor-tf). Written in bifunctorial way with [Bifunctor Tagless Final](https://izumi.7mind.io/bio/), using [ZIO 2](https://zio.dev) as a runtime and ZIO Environment with distage-testkit for composing test fixtures.
+- [distage-example-monofunctor-tf](distage-example-monofunctor-tf). Written in monofunctorial way with [Cats Core](https://typelevel.org/cats/), using [ZIO 2](https://zio.dev) as a runtime and ZIO Environment with distage-testkit for composing test fixtures.
+- [distage-example-monomorphic-cats](distage-example-monomorphic-cats). Written in monomorphic way with [Cats Effect 3](https://typelevel.org/cats-effect/) as a runtime with distage-testkit for composing test fixtures.
 
 To launch tests that require postgres ensure you have a `docker` daemon running in the background.
 
 Use `sbt test` to launch the tests.
 
-You can launch the application with the following command.
+You can launch the application by moving to one of the examples' directories (with `cd distage-example-bifunctor-tf` for example) and starting the following command.
 
 ```
 ./launcher -u scene:managed :leaderboard
