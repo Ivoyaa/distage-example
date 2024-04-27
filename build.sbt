@@ -43,6 +43,26 @@ val Deps = new {
   val catsCore = "org.typelevel" %% "cats-core" % V.catsCore
 
   val graalMetadata = "org.graalvm.buildtools" % "graalvm-reachability-metadata" % V.graalMetadata
+
+  val CoreDeps = Seq(
+    distageCore,
+    distageRoles,
+    distageConfig,
+    logstageSlf4j,
+    distageDocker,
+    distageTestkit % Test,
+    scalatest % Test,
+    scalacheck % Test,
+    http4sDsl,
+    http4sServer,
+    http4sClient % Test,
+    http4sCirce,
+    circeGeneric,
+    doobie,
+    doobiePostgres,
+    doobieHikari,
+    graalMetadata,
+  )
 }
 
 inThisBuild(
@@ -58,79 +78,75 @@ inThisBuild(
 // that's just for quick experiments with distage snapshots
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-lazy val leaderboard = project
+def makeExampleProject(moduleName: String, dir: String)(deps: Seq[ModuleID]) =
+  Project(moduleName, file(dir))
+    .settings(
+      name := moduleName,
+      libraryDependencies ++= deps,
+      libraryDependencies ++= {
+        if (scalaVersion.value.startsWith("2")) {
+          Seq(compilerPlugin(Deps.kindProjector))
+        } else {
+          Seq.empty
+        }
+      },
+      scalacOptions -= "-Xfatal-warnings",
+      scalacOptions -= "-Ykind-projector",
+      scalacOptions -= "-Wnonunit-statement",
+      scalacOptions ++= {
+        if (scalaVersion.value.startsWith("2")) {
+          Seq(
+            "-Xsource:3",
+            "-P:kind-projector:underscore-placeholders",
+            "-Wmacros:after",
+          )
+        } else {
+          Seq(
+            "-source:3.2",
+            "-Ykind-projector:underscores",
+            "-Yretain-trees",
+          )
+        }
+      },
+      scalacOptions ++= Seq(
+        s"-Xmacro-settings:product-name=${name.value}",
+        s"-Xmacro-settings:product-version=${version.value}",
+        s"-Xmacro-settings:product-group=${organization.value}",
+        s"-Xmacro-settings:scala-version=${scalaVersion.value}",
+        s"-Xmacro-settings:scala-versions=${crossScalaVersions.value.mkString(":")}",
+        s"-Xmacro-settings:sbt-version=${sbtVersion.value}",
+        s"-Xmacro-settings:git-repo-clean=${git.gitUncommittedChanges.value}",
+        s"-Xmacro-settings:git-branch=${git.gitCurrentBranch.value}",
+        s"-Xmacro-settings:git-described-version=${git.gitDescribedVersion.value.getOrElse("")}",
+        s"-Xmacro-settings:git-head-commit=${git.gitHeadCommit.value.getOrElse("")}",
+      ),
+      GraalVMNativeImage / mainClass := Some("leaderboard.GenericLauncher"),
+      graalVMNativeImageOptions ++= Seq(
+        "--no-fallback",
+        "-H:+ReportExceptionStackTraces",
+        "--report-unsupported-elements-at-runtime",
+        "--enable-https",
+        "--enable-http",
+        "-J-Xmx8G",
+      ),
+      graalVMNativeImageGraalVersion := Some("ol9-java17-22.3.1"),
+      run / fork                     := true,
+    )
+    .enablePlugins(GraalVMNativeImagePlugin, UniversalPlugin)
+
+lazy val root = project
   .in(file("."))
-  .settings(
-    name := "leaderboard",
-    libraryDependencies ++= Seq(
-      Deps.distageCore,
-      Deps.distageRoles,
-      Deps.distageConfig,
-      Deps.logstageSlf4j,
-      Deps.distageDocker,
-      Deps.distageTestkit % Test,
-      Deps.scalatest % Test,
-      Deps.scalacheck % Test,
-      Deps.http4sDsl,
-      Deps.http4sServer,
-      Deps.http4sClient % Test,
-      Deps.http4sCirce,
-      Deps.circeGeneric,
-      Deps.doobie,
-      Deps.doobiePostgres,
-      Deps.doobieHikari,
-      Deps.zio,
-      Deps.zioCats,
-      Deps.catsCore,
-      Deps.graalMetadata,
-    ),
-    libraryDependencies ++= {
-      if (scalaVersion.value.startsWith("2")) {
-        Seq(compilerPlugin(Deps.kindProjector))
-      } else {
-        Seq.empty
-      }
-    },
-    scalacOptions -= "-Xfatal-warnings",
-    scalacOptions -= "-Ykind-projector",
-    scalacOptions -= "-Wnonunit-statement",
-    scalacOptions ++= {
-      if (scalaVersion.value.startsWith("2")) {
-        Seq(
-          "-Xsource:3",
-          "-P:kind-projector:underscore-placeholders",
-          "-Wmacros:after",
-        )
-      } else {
-        Seq(
-          "-source:3.2",
-          "-Ykind-projector:underscores",
-          "-Yretain-trees",
-        )
-      }
-    },
-    scalacOptions ++= Seq(
-      s"-Xmacro-settings:product-name=${name.value}",
-      s"-Xmacro-settings:product-version=${version.value}",
-      s"-Xmacro-settings:product-group=${organization.value}",
-      s"-Xmacro-settings:scala-version=${scalaVersion.value}",
-      s"-Xmacro-settings:scala-versions=${crossScalaVersions.value.mkString(":")}",
-      s"-Xmacro-settings:sbt-version=${sbtVersion.value}",
-      s"-Xmacro-settings:git-repo-clean=${git.gitUncommittedChanges.value}",
-      s"-Xmacro-settings:git-branch=${git.gitCurrentBranch.value}",
-      s"-Xmacro-settings:git-described-version=${git.gitDescribedVersion.value.getOrElse("")}",
-      s"-Xmacro-settings:git-head-commit=${git.gitHeadCommit.value.getOrElse("")}",
-    ),
-    GraalVMNativeImage / mainClass := Some("leaderboard.GenericLauncher"),
-    graalVMNativeImageOptions ++= Seq(
-      "--no-fallback",
-      "-H:+ReportExceptionStackTraces",
-      "--report-unsupported-elements-at-runtime",
-      "--enable-https",
-      "--enable-http",
-      "-J-Xmx4G",
-    ),
-    graalVMNativeImageGraalVersion := Some("ol9-java17-22.3.1"),
-    run / fork                     := true,
+  .aggregate(
+    `leaderboard-monofunctor-tf`
   )
-  .enablePlugins(GraalVMNativeImagePlugin, UniversalPlugin)
+
+lazy val `leaderboard-monofunctor-tf` = makeExampleProject(
+  moduleName = "leaderboard-monofunctor-tf",
+  dir        = "distage-example-monofunctor-tf",
+)(deps =
+  Deps.CoreDeps ++ Seq(
+    Deps.zio,
+    Deps.zioCats,
+    Deps.catsCore,
+  )
+)
