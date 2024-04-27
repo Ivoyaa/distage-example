@@ -137,12 +137,24 @@ def makeExampleProject(moduleName: String, dir: String)(deps: Seq[ModuleID]) =
 lazy val root = project
   .in(file("."))
   .aggregate(
-    `leaderboard-monofunctor-tf`
+    `leaderboard-monofunctor-tf`,
+    `leaderboard-bifunctor-tf`
   )
 
 lazy val `leaderboard-monofunctor-tf` = makeExampleProject(
   moduleName = "leaderboard-monofunctor-tf",
   dir        = "distage-example-monofunctor-tf",
+)(deps =
+  Deps.CoreDeps ++ Seq(
+    Deps.zio,
+    Deps.zioCats,
+    Deps.catsCore,
+  )
+)
+
+lazy val `leaderboard-bifunctor-tf` = makeExampleProject(
+  moduleName = "leaderboard-bifunctor-tf",
+  dir        = "distage-example-bifunctor-tf",
 )(deps =
   Deps.CoreDeps ++ Seq(
     Deps.zio,
