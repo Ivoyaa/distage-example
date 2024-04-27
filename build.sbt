@@ -11,6 +11,7 @@ val V = new {
   val kindProjector = "0.13.3"
   val circeGeneric  = "0.14.6"
   val graalMetadata = "0.10.1"
+  val catsEffect    = "3.5.4"
 }
 
 val Deps = new {
@@ -41,6 +42,8 @@ val Deps = new {
   val zioCats = "dev.zio" %% "zio-interop-cats" % V.zioCats
 
   val catsCore = "org.typelevel" %% "cats-core" % V.catsCore
+
+  val catsEffect = "org.typelevel" %% "cats-effect" % V.catsEffect
 
   val graalMetadata = "org.graalvm.buildtools" % "graalvm-reachability-metadata" % V.graalMetadata
 
@@ -138,7 +141,8 @@ lazy val root = project
   .in(file("."))
   .aggregate(
     `leaderboard-monofunctor-tf`,
-    `leaderboard-bifunctor-tf`
+    `leaderboard-bifunctor-tf`,
+    `leaderboard-monomorphic-cats`,
   )
 
 lazy val `leaderboard-monofunctor-tf` = makeExampleProject(
@@ -160,5 +164,14 @@ lazy val `leaderboard-bifunctor-tf` = makeExampleProject(
     Deps.zio,
     Deps.zioCats,
     Deps.catsCore,
+  )
+)
+
+lazy val `leaderboard-monomorphic-cats` = makeExampleProject(
+  moduleName = "leaderboard-monomorphic-cats",
+  dir        = "distage-example-monomorphic-cats",
+)(deps =
+  Deps.CoreDeps ++ Seq(
+    Deps.catsEffect
   )
 )
