@@ -22,5 +22,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build native app
         run: sbt GraalVMNativeImage/packageBin
-      - name: Check native app
-        run: ./target/graalvm-native-image/leaderboard :help
+      - name: Check native app (bifunctor)
+        run: ./distage-example-bifunctor-tf/target/graalvm-native-image/leaderboard :help
+      - name: Check native app (monofunctor)
+        run: ./distage-example-monofunctor-tf/target/graalvm-native-image/leaderboard :help
+      - name: Check native app (monomorphic)
+        run: ./distage-example-monomorphic-cats/target/graalvm-native-image/leaderboard :help
