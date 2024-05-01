@@ -11,8 +11,8 @@ import org.http4s.HttpRoutes
 import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
 
-final class ProfileApi[F[+_]: Concurrent](
-  dsl: Http4sDsl[F[_]],
+final class ProfileApi[F[_]: Concurrent](
+  dsl: Http4sDsl[F],
   profiles: Profiles[F],
   ranks: Ranks[F],
   log: LogIO[F],
@@ -20,12 +20,11 @@ final class ProfileApi[F[+_]: Concurrent](
 
   import dsl.*
 
-  override def http: HttpRoutes[F[_]] = {
+  override def http: HttpRoutes[F] = {
     HttpRoutes.of {
       case GET -> Root / "profile" / UUIDVar(userId) =>
         Ok(for {
-          resEither <- ranks.getRank(userId)
-          res       <- resEither.liftTo[F]
+          res <- ranks.getRank(userId)
         } yield res.asJson)
 
       case rq @ POST -> Root / "profile" / UUIDVar(userId) =>

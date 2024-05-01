@@ -16,7 +16,7 @@ object HttpServer {
 
   final class Impl(
     allHttpApis: Set[HttpApi]
-  ) extends Lifecycle.Of[IO[_], HttpServer](
+  ) extends Lifecycle.Of[IO, HttpServer](
       Lifecycle.fromCats {
         val combinedApis = allHttpApis.map(_.http).toList.foldK
 

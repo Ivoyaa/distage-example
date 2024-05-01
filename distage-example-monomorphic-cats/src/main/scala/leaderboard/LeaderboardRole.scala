@@ -35,8 +35,8 @@ final class LadderRole(
   @unused ladderApi: LadderApi,
   @unused runningServer: HttpServer,
   log: LogIO[IO],
-) extends RoleService[IO[_]] {
-  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[IO[_], Unit] = {
+) extends RoleService[IO] {
+  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[IO, Unit] = {
     Lifecycle.liftF(log.info("Ladder API started!"))
   }
 }
@@ -62,8 +62,8 @@ final class ProfileRole(
   @unused profileApi: ProfileApi,
   @unused runningServer: HttpServer,
   log: LogIO[IO],
-) extends RoleService[IO[_]] {
-  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[IO[_], Unit] = {
+) extends RoleService[IO] {
+  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[IO, Unit] = {
     Lifecycle.liftF(log.info("Profile API started!"))
   }
 }
@@ -98,8 +98,8 @@ final class LeaderboardRole(
   @unused ladderRole: LadderRole,
   @unused profileRole: ProfileRole,
   log: LogIO[IO],
-) extends RoleService[IO[_]] {
-  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[IO[_], Unit] = {
+) extends RoleService[IO] {
+  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[IO, Unit] = {
     Lifecycle.liftF(log.info("Ladder & Profile APIs started!"))
   }
 }

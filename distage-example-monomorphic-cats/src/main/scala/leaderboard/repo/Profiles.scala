@@ -4,35 +4,35 @@ import cats.effect.IO
 import distage.Lifecycle
 import doobie.postgres.implicits.*
 import doobie.syntax.string.*
-import leaderboard.model.{QueryFailure, UserId, UserProfile}
+import leaderboard.model.{UserId, UserProfile}
 import leaderboard.sql.SQL
 import logstage.LogIO
 
 import scala.collection.concurrent.TrieMap
 
 trait Profiles {
-  def setProfile(userId: UserId, profile: UserProfile): IO[Either[QueryFailure, Unit]]
-  def getProfile(userId: UserId): IO[Either[QueryFailure, Option[UserProfile]]]
+  def setProfile(userId: UserId, profile: UserProfile): IO[Unit]
+  def getProfile(userId: UserId): IO[Option[UserProfile]]
 }
 
 object Profiles {
   final class Dummy
-    extends Lifecycle.LiftF[IO[_], Profiles](for {
+    extends Lifecycle.LiftF[IO, Profiles](for {
       state <- IO.pure(TrieMap.empty[UserId, UserProfile])
     } yield {
       new Profiles {
-        override def setProfile(userId: UserId, profile: UserProfile): IO[Either[Nothing, Unit]] =
-          IO.pure(Right(state.update(userId, profile)))
+        override def setProfile(userId: UserId, profile: UserProfile): IO[Unit] =
+          IO.pure(state.update(userId, profile))
 
-        override def getProfile(userId: UserId): IO[Either[Nothing, Option[UserProfile]]] =
-          IO.pure(Right(state.get(userId)))
+        override def getProfile(userId: UserId): IO[Option[UserProfile]] =
+          IO.pure(state.get(userId))
       }
     })
 
   final class Postgres(
     sql: SQL,
     log: LogIO[IO],
-  ) extends Lifecycle.LiftF[IO[_], Profiles](for {
+  ) extends Lifecycle.LiftF[IO, Profiles](for {
       _ <- log.info("Creating Profile table")
       _ <- sql.execute("ddl-profiles") {
         sql"""create table if not exists profiles (
@@ -44,7 +44,7 @@ object Profiles {
              |""".stripMargin.update.run
       }
     } yield new Profiles {
-      override def setProfile(userId: UserId, profile: UserProfile): IO[Either[QueryFailure, Unit]] = {
+      override def setProfile(userId: UserId, profile: UserProfile): IO[Unit] = {
         sql
           .execute("set-profile") {
             sql"""insert into profiles (user_id, name, description)
@@ -53,10 +53,10 @@ object Profiles {
                  |  name = excluded.name,
                  |  description = excluded.description
                  |""".stripMargin.update.run
-          }.map(_.map(_ => ()))
-      }
+          }
+      }.void
 
-      override def getProfile(userId: UserId): IO[Either[QueryFailure, Option[UserProfile]]] = {
+      override def getProfile(userId: UserId): IO[Option[UserProfile]] = {
         sql.execute("get-profile") {
           sql"""select name, description from profiles
                |where user_id = $userId

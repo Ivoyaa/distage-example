@@ -29,7 +29,7 @@ object LeaderboardPlugin extends PluginDef {
   include(modules.prodConfigs)
 
   object modules {
-    def roles[F[+_]: TagK]: RoleModuleDef = new RoleModuleDef {
+    def roles[F[_]: TagK]: RoleModuleDef = new RoleModuleDef {
       // The `ladder` role
       makeRole[LadderRole[F]]
 
@@ -40,10 +40,10 @@ object LeaderboardPlugin extends PluginDef {
       makeRole[LeaderboardRole[F]]
 
       // Add bundled roles: `help` & `configwriter`
-      include(BundledRolesModule[F[_]](version = "1.0.0"))
+      include(BundledRolesModule[F](version = "1.0.0"))
     }
 
-    def api[F[+_]: TagK]: ModuleDef = new ModuleDef {
+    def api[F[_]: TagK]: ModuleDef = new ModuleDef {
       // The `ladder` API
       make[LadderApi[F]]
       // The `profile` API
@@ -58,17 +58,17 @@ object LeaderboardPlugin extends PluginDef {
 
       make[Ranks[F]].from[Ranks.Impl[F]]
 
-      makeTrait[Http4sDsl[F[_]]]
+      makeTrait[Http4sDsl[F]]
     }
 
-    def repoDummy[F[+_]: TagK]: ModuleDef = new ModuleDef {
+    def repoDummy[F[_]: TagK]: ModuleDef = new ModuleDef {
       tag(Repo.Dummy)
 
       make[Ladder[F]].fromResource[Ladder.Dummy[F]]
       make[Profiles[F]].fromResource[Profiles.Dummy[F]]
     }
 
-    def repoProd[F[+_]: TagK]: ModuleDef = new ModuleDef {
+    def repoProd[F[_]: TagK]: ModuleDef = new ModuleDef {
       tag(Repo.Prod)
 
       make[Ladder[F]].fromResource[Ladder.Postgres[F]]
@@ -76,7 +76,7 @@ object LeaderboardPlugin extends PluginDef {
 
       make[SQL[F]].from[SQL.Impl[F]]
 
-      make[Transactor[F[_]]].fromResource[TransactorResource[F[_]]]
+      make[Transactor[F]].fromResource[TransactorResource[F]]
       make[PortCheck].from(new PortCheck(3.seconds))
     }
 

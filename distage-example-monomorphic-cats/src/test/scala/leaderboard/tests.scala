@@ -42,12 +42,12 @@ trait ProdTest extends LeaderboardTest {
 }
 
 final class LadderTestDummy extends LadderTest with DummyTest
-//final class ProfilesTestDummy extends ProfilesTest with DummyTest
-//final class RanksTestDummy extends RanksTest with DummyTest
+final class ProfilesTestDummy extends ProfilesTest with DummyTest
+final class RanksTestDummy extends RanksTest with DummyTest
 
 final class LadderTestPostgres extends LadderTest with ProdTest
-//final class ProfilesTestPostgres extends ProfilesTest with ProdTest
-//final class RanksTestPostgres extends RanksTest with ProdTest
+final class ProfilesTestPostgres extends ProfilesTest with ProdTest
+final class RanksTestPostgres extends RanksTest with ProdTest
 
 abstract class LadderTest extends LeaderboardTest {
 
@@ -60,7 +60,7 @@ abstract class LadderTest extends LeaderboardTest {
           user   <- rnd[UserId]
           score  <- rnd[Score]
           _      <- ladder.submitScore(user, score)
-          scores <- ladder.getScores.flatMap(IO.fromEither(_))
+          scores <- ladder.getScores
           res     = scores.find(_._1 == user).map(_._2)
           _      <- assertIO(res contains score)
         } yield ()
@@ -76,7 +76,7 @@ abstract class LadderTest extends LeaderboardTest {
 
           _      <- ladder.submitScore(user1, score1)
           _      <- ladder.submitScore(user2, score2)
-          scores <- ladder.getScores.flatMap(IO.fromEither(_))
+          scores <- ladder.getScores
 
           user1Rank = scores.indexWhere(_._1 == user1)
           user2Rank = scores.indexWhere(_._1 == user2)
@@ -106,7 +106,7 @@ abstract class ProfilesTest extends LeaderboardTest {
           desc   <- rnd[String]
           profile = UserProfile(name, desc)
           _      <- profiles.setProfile(user, profile)
-          res    <- profiles.getProfile(user).flatMap(IO.fromEither(_))
+          res    <- profiles.getProfile(user)
           _      <- assertIO(res contains profile)
         } yield ()
     }
@@ -138,7 +138,7 @@ abstract class RanksTest extends LeaderboardTest {
           user  <- rnd[UserId]
           score <- rnd[Score]
           _     <- ladder.submitScore(user, score)
-          res1  <- ranks.getRank(user).flatMap(IO.fromEither(_))
+          res1  <- ranks.getRank(user)
           _     <- assertIO(res1.isEmpty)
         } yield ()
     }
@@ -162,8 +162,8 @@ abstract class RanksTest extends LeaderboardTest {
           _ <- profiles.setProfile(user2, UserProfile(name2, desc2))
           _ <- ladder.submitScore(user2, score2)
 
-          user1Rank <- ranks.getRank(user1).flatMap(IO.fromEither(_)).map(_.get.rank)
-          user2Rank <- ranks.getRank(user2).flatMap(IO.fromEither(_)).map(_.get.rank)
+          user1Rank <- ranks.getRank(user1).map(_.get.rank)
+          user2Rank <- ranks.getRank(user2).map(_.get.rank)
 
           _ <-
             if (score1 > score2) {

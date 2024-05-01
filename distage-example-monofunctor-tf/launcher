@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-ARGS="$@"
-
-cd ../
-sbt "project leaderboard-monofunctor-tf; runMain leaderboard.GenericLauncher $ARGS"

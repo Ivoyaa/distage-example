@@ -33,12 +33,12 @@ import scala.annotation.unused
   *   curl -X GET http://localhost:8080/ladder
   * }}}
   */
-final class LadderRole[F[+_]: Applicative](
+final class LadderRole[F[_]: Applicative](
   @unused ladderApi: LadderApi[F],
   @unused runningServer: HttpServer,
   log: LogIO[F],
-) extends RoleService[F[_]] {
-  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[F[_], Unit] = {
+) extends RoleService[F] {
+  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[F, Unit] = {
     Lifecycle.liftF(log.info("Ladder API started!"))
   }
 }
@@ -60,12 +60,12 @@ object LadderRole extends RoleDescriptor {
   *   curl -X GET http://localhost:8080/profile/50753a00-5e2e-4a2f-94b0-e6721b0a3cc4
   * }}}
   */
-final class ProfileRole[F[+_]: Applicative](
+final class ProfileRole[F[_]: Applicative](
   @unused profileApi: ProfileApi[F],
   @unused runningServer: HttpServer,
   log: LogIO[F],
-) extends RoleService[F[_]] {
-  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[F[_], Unit] = {
+) extends RoleService[F] {
+  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[F, Unit] = {
     Lifecycle.liftF(log.info("Profile API started!"))
   }
 }
@@ -96,12 +96,12 @@ object ProfileRole extends RoleDescriptor {
   *   curl -X GET http://localhost:8080/profile/50753a00-5e2e-4a2f-94b0-e6721b0a3cc4
   * }}}
   */
-final class LeaderboardRole[F[+_]: Applicative](
+final class LeaderboardRole[F[_]: Applicative](
   @unused ladderRole: LadderRole[F],
   @unused profileRole: ProfileRole[F],
   log: LogIO[F],
-) extends RoleService[F[_]] {
-  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[F[_], Unit] = {
+) extends RoleService[F] {
+  override def start(roleParameters: RawEntrypointParams, freeArgs: Vector[String]): Lifecycle[F, Unit] = {
     Lifecycle.liftF(log.info("Ladder & Profile APIs started!"))
   }
 }

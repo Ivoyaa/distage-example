@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-ARGS="$@"
-
-cd ../
-sbt "project leaderboard-monomorphic-cats; runMain leaderboard.GenericLauncher $ARGS"

@@ -40,7 +40,7 @@ object LeaderboardPlugin extends PluginDef {
       makeRole[LeaderboardRole]
 
       // Add bundled roles: `help` & `configwriter`
-      include(BundledRolesModule[IO[_]](version = "1.0.0"))
+      include(BundledRolesModule[IO](version = "1.0.0"))
     }
 
     def api: ModuleDef = new ModuleDef {
@@ -58,7 +58,7 @@ object LeaderboardPlugin extends PluginDef {
 
       make[Ranks].from[Ranks.Impl]
 
-      makeTrait[Http4sDsl[IO[_]]]
+      makeTrait[Http4sDsl[IO]]
     }
 
     def repoDummy: ModuleDef = new ModuleDef {
@@ -76,7 +76,7 @@ object LeaderboardPlugin extends PluginDef {
 
       make[SQL].from[SQL.Impl]
 
-      make[Transactor[IO[_]]].fromResource[TransactorResource]
+      make[Transactor[IO]].fromResource[TransactorResource]
       make[PortCheck].from(new PortCheck(3.seconds))
     }
 

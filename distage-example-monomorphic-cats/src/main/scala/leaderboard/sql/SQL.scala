@@ -6,17 +6,17 @@ import doobie.util.transactor.Transactor
 import leaderboard.model.QueryFailure
 
 trait SQL {
-  def execute[A](queryName: String)(conn: ConnectionIO[A]): IO[Either[QueryFailure, A]]
+  def execute[A](queryName: String)(conn: ConnectionIO[A]): IO[A]
 }
 
 object SQL {
   final class Impl(
-    transactor: Transactor[IO[_]]
+    transactor: Transactor[IO]
   ) extends SQL {
-    override def execute[A](queryName: String)(conn: ConnectionIO[A]): IO[Either[QueryFailure, A]] = {
+    override def execute[A](queryName: String)(conn: ConnectionIO[A]): IO[A] = {
       transactor.trans
         .apply(conn)
-        .redeem(ex => Left(QueryFailure(queryName, ex)), res => Right(res))
+        .handleErrorWith(ex => IO.raiseError(QueryFailure(queryName, ex)))
     }
   }
 }

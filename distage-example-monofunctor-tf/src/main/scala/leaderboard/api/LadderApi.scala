@@ -9,24 +9,22 @@ import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
 
 final class LadderApi[F[_]: MonadThrow](
-  dsl: Http4sDsl[F[_]],
+  dsl: Http4sDsl[F],
   ladder: Ladder[F],
 ) extends HttpApi[F] {
 
   import dsl.*
 
-  override def http: HttpRoutes[F[_]] = {
+  override def http: HttpRoutes[F] = {
     HttpRoutes.of {
       case GET -> Root / "ladder" =>
         Ok(for {
-          resEither <- ladder.getScores
-          res       <- resEither.liftTo[F]
+          res <- ladder.getScores
         } yield res.asJson)
 
       case POST -> Root / "ladder" / UUIDVar(userId) / LongVar(score) =>
         Ok(for {
-          resEither <- ladder.submitScore(userId, score)
-          _         <- resEither.liftTo[F]
+          _ <- ladder.submitScore(userId, score)
         } yield ())
     }
   }

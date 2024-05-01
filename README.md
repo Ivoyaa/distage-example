@@ -16,7 +16,7 @@ To launch tests that require postgres ensure you have a `docker` daemon running 
 
 Use `sbt test` to launch the tests.
 
-You can launch the application by moving to one of the examples' directories (with `cd distage-example-bifunctor-tf` for example) and starting the following command.
+You can launch the application with the following command.
 
 ```
 ./launcher -u scene:managed :leaderboard

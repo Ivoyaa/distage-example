@@ -19,12 +19,11 @@ final class ProfileApi(
 
   import dsl.*
 
-  override def http: HttpRoutes[IO[_]] = {
+  override def http: HttpRoutes[IO] = {
     HttpRoutes.of {
       case GET -> Root / "profile" / UUIDVar(userId) =>
         Ok(for {
-          resEither <- ranks.getRank(userId)
-          res       <- IO.fromEither(resEither)
+          res <- ranks.getRank(userId)
         } yield res.asJson)
 
       case rq @ POST -> Root / "profile" / UUIDVar(userId) =>
