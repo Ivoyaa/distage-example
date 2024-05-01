@@ -20,11 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build native app
-        run: sbt GraalVMNativeImage/packageBin
       - name: Check native app (bifunctor)
-        run: ./distage-example-bifunctor-tf/target/graalvm-native-image/leaderboard :help
+        run: |
+          sbt "project leaderboard-bifunctor-tf; GraalVMNativeImage/packageBin"
+          ./distage-example-bifunctor-tf/target/graalvm-native-image/leaderboard :help
       - name: Check native app (monofunctor)
-        run: ./distage-example-monofunctor-tf/target/graalvm-native-image/leaderboard :help
+        run: |
+          sbt "project leaderboard-monofunctor-tf; GraalVMNativeImage/packageBin"
+          ./distage-example-monofunctor-tf/target/graalvm-native-image/leaderboard :help
       - name: Check native app (monomorphic)
-        run: ./distage-example-monomorphic-cats/target/graalvm-native-image/leaderboard :help
+        run: |
+          sbt "project leaderboard-monomorphic-cats; GraalVMNativeImage/packageBin"
+          ./distage-example-monomorphic-cats/target/graalvm-native-image/leaderboard :help

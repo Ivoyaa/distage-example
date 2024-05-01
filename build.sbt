@@ -135,21 +135,21 @@ def makeExampleProject(moduleName: String, dir: String)(deps: Seq[ModuleID]) =
       graalVMNativeImageGraalVersion := Some("ol9-java17-22.3.1"),
       run / fork                     := true,
     )
-    .dependsOn(`graal-configs`)
+    .dependsOn(`graal-resources`)
     .enablePlugins(GraalVMNativeImagePlugin, UniversalPlugin)
 
 lazy val root = project
   .in(file("."))
   .aggregate(
-    `graal-configs`,
+    `graal-resources`,
     `leaderboard-monofunctor-tf`,
     `leaderboard-bifunctor-tf`,
     `leaderboard-monomorphic-cats`,
   )
   .enablePlugins(GraalVMNativeImagePlugin, UniversalPlugin) // enabled here for CI purposes
 
-lazy val `graal-configs` = project
-  .in(file("graal-configs"))
+lazy val `graal-resources` = project
+  .in(file("graal-resources"))
   .settings(Compile / resourceDirectory := baseDirectory.value)
 
 lazy val `leaderboard-monofunctor-tf` = makeExampleProject(
